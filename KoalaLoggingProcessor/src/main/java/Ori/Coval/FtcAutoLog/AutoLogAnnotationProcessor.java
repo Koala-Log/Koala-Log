@@ -584,6 +584,15 @@ public class AutoLogAnnotationProcessor extends AbstractProcessor {
 
 
             clsBuilder.addMethod(override);
+
+            if (method.getAnnotationMirrors().stream()
+                    .anyMatch(m -> m.getAnnotationType().toString()
+                            .equals("Ori.Coval.Logging.AutoLogOutput"))
+            && method.getParameters().isEmpty()) {
+                toLog.addStatement("this.$L()", mname);
+            }
+
+
         }
 
 
