@@ -92,12 +92,27 @@ public class KoalaLogCore implements Closeable {
             BiConsumer<String, T> dashboardPoster,
             boolean postToDashboard
     ) {
+        return doLog(name, value, wpiType, wpiLogger, dashboardPoster, postToDashboard, "");
+    }
+
+    /**
+     * General-purpose log function used for all value types.
+     */
+    static <T> T doLog(
+            String name,
+            T value,
+            String wpiType,
+            BiConsumer<Integer, T> wpiLogger,
+            BiConsumer<String, T> dashboardPoster,
+            boolean postToDashboard,
+            String metadata
+    ) {
         boolean isNew = !recordIDs.containsKey(name);
         int id = recordIDs.computeIfAbsent(name, KoalaLogCore::getID);
         long ts = nowMicros();
 
         try {
-            if (isNew) startEntry(id, name, wpiType, "", ts);
+            if (isNew) startEntry(id, name, wpiType, metadata, ts);
             wpiLogger.accept(id, value);
             if (postToDashboard) dashboardPoster.accept(name, value);
         } catch (IOException | RuntimeException e) {
