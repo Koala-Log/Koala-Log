@@ -114,7 +114,8 @@ foreach ($remote in $AllFiles) {
         continue
     }
     Write-Host "Pulling $fileName"
-    & $AdbPath pull $remote $DestPath
+    # Use full file path for destination to preserve exact extension
+    & $AdbPath pull $remote $localFile
 }
 
 # Open (or focus) folder & notify
