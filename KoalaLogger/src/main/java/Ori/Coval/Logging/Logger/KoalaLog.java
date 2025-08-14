@@ -145,13 +145,7 @@ public class KoalaLog {
     public static String log(String name, String value, boolean post) {
         return KoalaLogCore.doLog(
                 name, value, "string",
-                (id, v) -> {
-                    try {
-                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), KoalaLogCore.nowMicros());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), KoalaLogCore.nowMicros()),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post
         );
@@ -160,13 +154,7 @@ public class KoalaLog {
     public static String log(String name, String value, boolean post, String metadata) {
         return KoalaLogCore.doLog(
                 name, value, "string",
-                (id, v) -> {
-                    try {
-                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), KoalaLogCore.nowMicros());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), KoalaLogCore.nowMicros()),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
                 metadata

@@ -190,16 +190,23 @@ public class BytePacker {
         return arr;
     }
 
+    public static byte[] packString(String s) {
+        if (s == null) s = ""; // or choose to throw
+        return s.getBytes(StandardCharsets.UTF_8); // payload for WPILOG "string"
+    }
+
     /**
      * Packs an array of UTF‑8 strings into the WPILOG array‑of‑strings format:
      *  4‑byte LE count N,
      *  then for each string: 4‑byte LE length, followed by UTF‑8 bytes.
      */
-    public static byte[] packStrings(String... values) throws IOException{
+    public static byte[] packStrings(String[] values) throws IOException{
+        if (values == null) values = new String[0];
         ByteArrayOutputStream bb = new ByteArrayOutputStream();
         // number of strings
         bb.write(Utils.le32(values.length));
         for (String s : values) {
+            if (s == null) s = "";
             byte[] sb = s.getBytes(StandardCharsets.UTF_8);
             // length of this string
             bb.write(Utils.le32(sb.length));
