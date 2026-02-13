@@ -27,6 +27,14 @@ public class KoalaLog {
         KoalaLogCore.setup(hardwareMap, filename);
     }
 
+    /**
+     * Close the currently open log (if any) and reset internal state so that
+     * the next call to setup(...) starts a new log file.
+     */
+    public static void close() {
+        KoalaLogCore.closeLog();
+    }
+
     // Scalars
     public static boolean log(String name, boolean value, boolean post) {
         return KoalaLogCore.doLog(

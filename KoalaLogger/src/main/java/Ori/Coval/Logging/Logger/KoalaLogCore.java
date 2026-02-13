@@ -39,12 +39,30 @@ public class KoalaLogCore implements Closeable {
      * Set up logging to a specific file.
      */
     public static void setup(HardwareMap hardwareMap, String filename) {
+        if (fos != null) {
+            closeLog();
+        }
         LogFileManager.setup(hardwareMap.appContext, filename);
         fos = LogFileManager.getOutputStream();
-
         startTime = System.nanoTime() / 1000;
-
+        recordIDs.clear();
+        largestId = 0;
         SchemaRegistry.registerPose2dSchema();
+    }
+
+    public static void closeLog() {
+        synchronized (KoalaLogCore.class) {
+            if (fos != null) {
+                try {
+                    fos.flush();
+                    fos.close();
+                } catch (IOException ignored) {}
+                fos = null;
+            }
+            recordIDs.clear();
+            largestId = 0;
+            startTime = System.nanoTime() / 1000;
+        }
     }
 
     // --- Entry Management ---
