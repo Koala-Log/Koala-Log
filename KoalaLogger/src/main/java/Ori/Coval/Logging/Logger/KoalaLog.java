@@ -2,7 +2,6 @@ package Ori.Coval.Logging.Logger;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -25,6 +24,24 @@ public class KoalaLog {
      */
     public static void setup(HardwareMap hardwareMap, String filename) {
         KoalaLogCore.setup(hardwareMap, filename);
+    }
+
+    /**
+     * Set up logging but optionally run in fake (no-op) mode.
+     *
+     * When fakeLog == true, no log file is created and calls to log(...) are
+     * extremely cheap no-ops (they simply return the passed value).
+     */
+    public static void setup(HardwareMap hardwareMap, boolean fakeLog) {
+        KoalaLogCore.setup(hardwareMap, fakeLog);
+    }
+    
+    /**
+     * Set up logging to the given filename (chooses SD if present) and optionally
+     * run in fake (no-op) mode.
+     */
+    public static void setup(HardwareMap hardwareMap, String filename, boolean fakeLog) {
+        KoalaLogCore.setup(hardwareMap, filename, fakeLog);
     }
 
     /**

@@ -24,30 +24,74 @@ public class KoalaLogCore implements Closeable {
     private static int largestId = 0;
     private static long startTime = System.nanoTime() / 1000;
 
+    /**
+     * When true, logging is disabled — doLog and writeRecord are no-ops.
+     * This is the "fakeLog" mode requested by the user.
+     */
+    private static boolean fake = false;
+
     // --- Setup ---
 
     /**
-     * Set up logging to a file named by the current timestamp.
+     * Set up logging to a file named by the current timestamp (non-fake).
      */
     public static void setup(HardwareMap hardwareMap) {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
-                .format(new Date());
-        setup(hardwareMap, timeStamp + ".wpilog");
+            .format(new Date());
+        setup(hardwareMap, timeStamp + ".wpilog", false);
     }
 
     /**
      * Set up logging to a specific file.
      */
     public static void setup(HardwareMap hardwareMap, String filename) {
-        if (fos != null) {
-            closeLog();
+        setup(hardwareMap, filename, false);
+    }
+
+    /**
+     * Set up logging; if fakeLog == true then no file is created and logging is disabled.
+     */
+    public static void setup(HardwareMap hardwareMap, boolean fakeLog) {
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
+            .format(new Date());
+        setup(hardwareMap, timeStamp + ".wpilog", fakeLog);
+    }
+
+    /**
+     * Set up logging to a specific file, with an option to run in fake (no-op) mode.
+     */
+    public static void setup(HardwareMap hardwareMap, String filename, boolean fakeLog) {
+        synchronized (KoalaLogCore.class) {
+            // close any existing log
+            if (fos != null) {
+                try {
+                    fos.flush();
+                    fos.close();
+                } catch (IOException ignored) {}
+                fos = null;
+            }
+
+            // reset state
+            recordIDs.clear();
+            largestId = 0;
+            startTime = System.nanoTime() / 1000;
+            fake = fakeLog;
+
+            if (fake) {
+                // In fake mode we intentionally do not call LogFileManager.setup()
+                // and do not allocate an output stream. Logging operations will be
+                // short-circuited by checks of 'fake'.
+                return;
+            }
+
+            // Normal (non-fake) initialization
+            LogFileManager.setup(hardwareMap.appContext, filename);
+            fos = LogFileManager.getOutputStream();
+            startTime = System.nanoTime() / 1000;
+            recordIDs.clear();
+            largestId = 0;
+            SchemaRegistry.registerPose2dSchema();
         }
-        LogFileManager.setup(hardwareMap.appContext, filename);
-        fos = LogFileManager.getOutputStream();
-        startTime = System.nanoTime() / 1000;
-        recordIDs.clear();
-        largestId = 0;
-        SchemaRegistry.registerPose2dSchema();
     }
 
     public static void closeLog() {
@@ -62,6 +106,7 @@ public class KoalaLogCore implements Closeable {
             recordIDs.clear();
             largestId = 0;
             startTime = System.nanoTime() / 1000;
+            // do NOT change 'fake' here; let the caller choose to set it again on next setup.
         }
     }
 
@@ -72,6 +117,8 @@ public class KoalaLogCore implements Closeable {
     }
 
     private static void startEntry(int entryId, String name, String type, String metadata, long ts) throws IOException {
+        if (fake) return; // no writes in fake mode
+
         ByteArrayOutputStream bb = new ByteArrayOutputStream();
         bb.write(0); // control=Start
         bb.write(Utils.le32(entryId));
@@ -92,6 +139,7 @@ public class KoalaLogCore implements Closeable {
     }
 
     public static void appendRaw(String name, String type, byte[] payload) throws IOException {
+        if (fake) return;
         int id = recordIDs.computeIfAbsent(name, KoalaLogCore::getID);
         startEntry(id, name, type, "", nowMicros());
         writeRecord(id, payload, nowMicros());
@@ -103,12 +151,12 @@ public class KoalaLogCore implements Closeable {
      * General-purpose log function used for all value types.
      */
     static <T> T doLog(
-            String name,
-            T value,
-            String wpiType,
-            BiConsumer<Integer, T> wpiLogger,
-            BiConsumer<String, T> dashboardPoster,
-            boolean postToDashboard
+        String name,
+        T value,
+        String wpiType,
+        BiConsumer<Integer, T> wpiLogger,
+        BiConsumer<String, T> dashboardPoster,
+        boolean postToDashboard
     ) {
         return doLog(name, value, wpiType, wpiLogger, dashboardPoster, postToDashboard, "");
     }
@@ -117,14 +165,19 @@ public class KoalaLogCore implements Closeable {
      * General-purpose log function used for all value types.
      */
     static <T> T doLog(
-            String name,
-            T value,
-            String wpiType,
-            BiConsumer<Integer, T> wpiLogger,
-            BiConsumer<String, T> dashboardPoster,
-            boolean postToDashboard,
-            String metadata
+        String name,
+        T value,
+        String wpiType,
+        BiConsumer<Integer, T> wpiLogger,
+        BiConsumer<String, T> dashboardPoster,
+        boolean postToDashboard,
+        String metadata
     ) {
+        // If fake mode is enabled, skip everything and return value immediately.
+        if (fake) {
+            return value;
+        }
+
         boolean isNew = !recordIDs.containsKey(name);
         int id = recordIDs.computeIfAbsent(name, KoalaLogCore::getID);
         long ts = nowMicros();
@@ -143,6 +196,8 @@ public class KoalaLogCore implements Closeable {
      * Write a binary payload to the log.
      */
     static void writeRecord(int entryId, byte[] payload, long ts) {
+        if (fake) return;
+
         try {
             fos.write(0x7F);
             fos.write(Utils.le32(entryId));
@@ -167,6 +222,15 @@ public class KoalaLogCore implements Closeable {
 
     @Override
     public void close() throws IOException {
-        fos.close();
+        if (fos != null) fos.close();
+    }
+
+    // --- helper ---
+
+    /**
+     * Expose fake flag for callers/tests if needed.
+     */
+    public static boolean isFake() {
+        return fake;
     }
 }
