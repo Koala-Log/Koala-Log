@@ -12,9 +12,11 @@ android {
         targetSdk 33
     }
 }
-
+repositories {
+    maven { url 'https://maven.brott.dev/' } // for FTC Dashboard
+}
 dependencies {
-    implementation 'com.acmerobotics.dashboard:dashboard:0.4.16'
+    implementation "com.acmerobotics.dashboard:dashboard:0.5.1"
 }
 
 afterEvaluate {
