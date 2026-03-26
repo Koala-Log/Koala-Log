@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import Ori.Coval.Logging.Logger.KoalaLog;
+import Ori.Coval.Logging.Logger.SingleCoreKoalaLog;
 
 /**
  * TelemetryManager: automatically logs all fields, zero-arg methods, and suppliers
@@ -83,70 +83,70 @@ public class ReflectionLogger {
 
     private static void logValue(String name, Object value, Class<?> type, boolean post) {
         if (value == null) {
-            KoalaLog.log(name, "", post);
+            SingleCoreKoalaLog.log(name, "", post);
             return;
         }
         // Scalars
         if (type == boolean.class || type == Boolean.class) {
-            KoalaLog.log(name, (boolean) value, post);
+            SingleCoreKoalaLog.log(name, (boolean) value, post);
         } else if (type == byte.class) {
-            KoalaLog.log(name, (long) (byte) value, post);
+            SingleCoreKoalaLog.log(name, (long) (byte) value, post);
         } else if (type == char.class) {
-            KoalaLog.log(name, (long) (char) value, post);
+            SingleCoreKoalaLog.log(name, (long) (char) value, post);
         } else if (type == short.class) {
-            KoalaLog.log(name, (long) (short) value, post);
+            SingleCoreKoalaLog.log(name, (long) (short) value, post);
         } else if (type == int.class || type == Integer.class) {
-            KoalaLog.log(name, (long) (int) value, post);
+            SingleCoreKoalaLog.log(name, (long) (int) value, post);
         } else if (type == long.class || type == Long.class) {
-            KoalaLog.log(name, (long) value, post);
+            SingleCoreKoalaLog.log(name, (long) value, post);
         } else if (type == float.class || type == Float.class) {
-            KoalaLog.log(name, (float) value, post);
+            SingleCoreKoalaLog.log(name, (float) value, post);
         } else if (type == double.class || type == Double.class) {
-            KoalaLog.log(name, (double) value, post);
+            SingleCoreKoalaLog.log(name, (double) value, post);
         } else if (type == String.class) {
-            KoalaLog.log(name, value.toString(), post);
+            SingleCoreKoalaLog.log(name, value.toString(), post);
         }
         else if (type.isArray()) {
             Class<?> ct = type.getComponentType();
             // Boxed arrays
             if (ct == Boolean.class) {
-                KoalaLog.log(name, (Boolean[]) value, post);
+                SingleCoreKoalaLog.log(name, (Boolean[]) value, post);
             } else if (ct == Integer.class) {
-                KoalaLog.log(name, (Integer[]) value, post);
+                SingleCoreKoalaLog.log(name, (Integer[]) value, post);
             } else if (ct == Long.class) {
-                KoalaLog.log(name, (Long[]) value, post);
+                SingleCoreKoalaLog.log(name, (Long[]) value, post);
             } else if (ct == Float.class) {
-                KoalaLog.log(name, (Float[]) value, post);
+                SingleCoreKoalaLog.log(name, (Float[]) value, post);
             } else if (ct == Double.class) {
-                KoalaLog.log(name, (Double[]) value, post);
+                SingleCoreKoalaLog.log(name, (Double[]) value, post);
             }
             // Primitive arrays
             else if (ct == boolean.class) {
-                KoalaLog.log(name, (boolean[]) value, post);
+                SingleCoreKoalaLog.log(name, (boolean[]) value, post);
             } else if (ct == byte.class) {
                 byte[] arr = (byte[]) value;
                 long[] la = new long[arr.length]; for (int i = 0; i < arr.length; i++) la[i] = arr[i];
-                KoalaLog.log(name, la, post);
+                SingleCoreKoalaLog.log(name, la, post);
             } else if (ct == char.class) {
                 char[] arr = (char[]) value;
                 long[] la = new long[arr.length]; for (int i = 0; i < arr.length; i++) la[i] = arr[i];
-                KoalaLog.log(name, la, post);
+                SingleCoreKoalaLog.log(name, la, post);
             } else if (ct == short.class) {
                 short[] arr = (short[]) value;
                 long[] la = new long[arr.length]; for (int i = 0; i < arr.length; i++) la[i] = arr[i];
-                KoalaLog.log(name, la, post);
+                SingleCoreKoalaLog.log(name, la, post);
             } else if (ct == int.class) {
                 int[] arr = (int[]) value;
                 long[] la = new long[arr.length]; for (int i = 0; i < arr.length; i++) la[i] = arr[i];
-                KoalaLog.log(name, la, post);
+                SingleCoreKoalaLog.log(name, la, post);
             } else if (ct == long.class) {
-                KoalaLog.log(name, (long[]) value, post);
+                SingleCoreKoalaLog.log(name, (long[]) value, post);
             } else if (ct == float.class) {
-                KoalaLog.log(name, (float[]) value, post);
+                SingleCoreKoalaLog.log(name, (float[]) value, post);
             } else if (ct == double.class) {
-                KoalaLog.log(name, (double[]) value, post);
+                SingleCoreKoalaLog.log(name, (double[]) value, post);
             } else if (ct == String.class) {
-                KoalaLog.log(name, (String[]) value, post);
+                SingleCoreKoalaLog.log(name, (String[]) value, post);
             }
         }
     }

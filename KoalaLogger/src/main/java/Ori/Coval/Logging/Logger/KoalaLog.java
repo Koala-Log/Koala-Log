@@ -1,531 +1,289 @@
 package Ori.Coval.Logging.Logger;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Locale;
 
-/**
- * WpiLog: write WPILOG-format files for Advantage Scope.
- * Supports scalar and array data types.
- */
-@SuppressWarnings({"unused", "UnusedReturnValue"})
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class KoalaLog {
+
+    // ---------------------------------------------------------------
+    // Internal state
+    // ---------------------------------------------------------------
+
+    /** Sentinel that tells the worker thread to exit cleanly. */
+    private static final Runnable POISON_PILL = () -> {};
+
     /**
-     * Set up logging to a file named 'robot.wpilog' in SD or internal.
+     * Bounded queue of pending log tasks.
+     * 2 000 slots = plenty for a ~100 Hz loop, while bounding memory.
+     * If the worker can't keep up, offer() silently drops (non-blocking).
+     */
+    private static final BlockingQueue<Runnable> QUEUE =
+            new LinkedBlockingQueue<>(2000);
+
+    private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
+    private static Thread workerThread;
+
+    // ---------------------------------------------------------------
+    // Lifecycle
+    // ---------------------------------------------------------------
+
+    /**
+     * Calls KoalaLog.setup(hardwareMap) synchronously (must be on main thread).
+     * Does NOT start the background thread — call start() after this.
      */
     public static void setup(HardwareMap hardwareMap) {
-        KoalaLogCore.setup(hardwareMap);
+        SingleCoreKoalaLog.setup(hardwareMap);
     }
 
-    /**
-     * Set up logging to the given filename, choosing SD if present.
-     */
     public static void setup(HardwareMap hardwareMap, String filename) {
-        KoalaLogCore.setup(hardwareMap, filename);
+        SingleCoreKoalaLog.setup(hardwareMap, filename);
     }
 
-    /**
-     * Set up logging but optionally run in fake (no-op) mode.
-     *
-     * When fakeLog == true, no log file is created and calls to log(...) are
-     * extremely cheap no-ops (they simply return the passed value).
-     */
     public static void setup(HardwareMap hardwareMap, boolean fakeLog) {
-        KoalaLogCore.setup(hardwareMap, fakeLog);
+        SingleCoreKoalaLog.setup(hardwareMap, fakeLog);
     }
-    
-    /**
-     * Set up logging to the given filename (chooses SD if present) and optionally
-     * run in fake (no-op) mode.
-     */
+
     public static void setup(HardwareMap hardwareMap, String filename, boolean fakeLog) {
-        KoalaLogCore.setup(hardwareMap, filename, fakeLog);
+        SingleCoreKoalaLog.setup(hardwareMap, filename, fakeLog);
     }
 
-    /**
-     * Close the currently open log (if any) and reset internal state so that
-     * the next call to setup(...) starts a new log file.
-     */
-    public static void close() {
-        KoalaLogCore.closeLog();
+    public static synchronized void start() {
+        if (RUNNING.get()) return; // already running
+        QUEUE.clear();
+        RUNNING.set(true);
+        workerThread = new Thread(KoalaLog::drainLoop, "KoalaLog-Worker");
+        workerThread.setDaemon(true); // won't block program exit
+        workerThread.setPriority(Thread.MIN_PRIORITY); // yield to main thread
+        workerThread.start();
     }
 
-    // Scalars
+    public static void stop() {
+        if (!RUNNING.compareAndSet(true, false)) return;
+        QUEUE.offer(POISON_PILL);
+        if (workerThread != null) {
+            try {
+                workerThread.join(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            workerThread = null;
+        }
+        SingleCoreKoalaLog.close();
+    }
+
+    // ---------------------------------------------------------------
+    // Scalar log methods — mirror KoalaLog's API exactly
+    // ---------------------------------------------------------------
+
     public static boolean log(String name, boolean value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "boolean",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        return value;
     }
 
     public static boolean log(String name, boolean value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "boolean",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        return value;
     }
 
     public static long log(String name, long value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int64",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        return value;
     }
 
     public static long log(String name, long value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        return value;
     }
 
     public static int log(String name, int value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        return value;
     }
 
     public static int log(String name, int value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
-    }
-
-    public static Integer log(String name, Integer value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
-    }
-
-    public static Integer log(String name, Integer value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        return value;
     }
 
     public static float log(String name, float value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "float",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        return value;
     }
 
     public static float log(String name, float value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "float",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        return value;
     }
 
     public static double log(String name, double value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "double",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(new double[]{v}), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        return value;
     }
 
     public static double log(String name, double value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "double",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(new double[]{v}), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        return value;
     }
 
     public static String log(String name, String value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "string",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
+        // Capture value eagerly — strings are immutable, safe to close over
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        return value;
     }
 
     public static String log(String name, String value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "string",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        return value;
     }
 
-    // Arrays
+    // ---------------------------------------------------------------
+    // Array log methods — arrays are mutable, so we copy defensively
+    // ---------------------------------------------------------------
+
     public static boolean[] log(String name, boolean[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
+        final boolean[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        return value;
     }
 
     public static boolean[] log(String name, boolean[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
-    }
-
-    public static Boolean[] log(String name, Boolean[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Boolean[] log(String name, Boolean[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
+        final boolean[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        return value;
     }
 
     public static long[] log(String name, long[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
+        final long[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        return value;
     }
 
     public static long[] log(String name, long[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
-    }
-
-    public static Long[] log(String name, Long[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Long[] log(String name, Long[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
+        final long[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        return value;
     }
 
     public static int[] log(String name, int[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
+        final int[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        return value;
     }
 
     public static int[] log(String name, int[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
-    }
-
-    public static Integer[] log(String name, Integer[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Integer[] log(String name, Integer[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
+        final int[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        return value;
     }
 
     public static float[] log(String name, float[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
+        final float[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        return value;
     }
 
     public static float[] log(String name, float[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
-    }
-
-    public static Float[] log(String name, Float[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Float[] log(String name, Float[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
+        final float[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        return value;
     }
 
     public static double[] log(String name, double[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
+        final double[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        return value;
     }
 
     public static double[] log(String name, double[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
-    }
-
-    public static Double[] log(String name, Double[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Double[] log(String name, Double[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
+        final double[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        return value;
     }
 
     public static String[] log(String name, String[] value, boolean post) {
-        return KoalaLogCore.doLog(
-                name, value, "string[]",
-                (id, v) -> {
-                    try {
-                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), KoalaLogCore.nowMicros());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
+        final String[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        return value;
     }
 
     public static String[] log(String name, String[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "string[]",
-                (id, v) -> {
-                    try {
-                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), KoalaLogCore.nowMicros());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post,
-                metadata
-        );
+        final String[] copy = value.clone();
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        return value;
     }
 
-    /**
-     * Logs a 2D translation (two doubles) as struct:Translation2d
-     */
+    // ---------------------------------------------------------------
+    // Geometry helpers
+    // ---------------------------------------------------------------
+
     public static void logTranslation2d(String name, double x, double y, boolean post) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{x, y},
-                "struct:Translation2d",
-                (id, v) -> {
-                    // pack two doubles in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f", v[0], v[1])),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.logTranslation2d(name, x, y, post));
     }
 
     public static void logTranslation2d(String name, double x, double y, boolean post, String metadata) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{x, y},
-                "struct:Translation2d",
-                (id, v) -> {
-                    // pack two doubles in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f", v[0], v[1])),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.logTranslation2d(name, x, y, post, metadata));
     }
 
-    /**
-     * Logs a 2D rotation (one double) as struct:Rotation2d
-     */
     public static void logRotation2d(String name, double rotation, boolean post) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{rotation},
-                "struct:Rotation2d",
-                (id, v) -> {
-                    // pack one double in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "θ=%.2f", v[0])),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.logRotation2d(name, rotation, post));
     }
 
     public static void logRotation2d(String name, double rotation, boolean post, String metadata) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{rotation},
-                "struct:Rotation2d",
-                (id, v) -> {
-                    // pack one double in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "θ=%.2f", v[0])),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.logRotation2d(name, rotation, post, metadata));
     }
 
-    /**
-     * Logs a full Pose2d (three doubles) as struct:Pose2d
-     */
     public static void logPose2d(String name, double x, double y, double rot, boolean post) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{x, y, rot},
-                "struct:Pose2d",
-                (id, v) -> {
-                    // pack three doubles in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f,θ=%.2f", v[0], v[1], v[2])),
-                post
-        );
+        enqueue(() -> SingleCoreKoalaLog.logPose2d(name, x, y, rot, post));
     }
 
     public static void logPose2d(String name, double x, double y, double rot, boolean post, String metadata) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{x, y, rot},
-                "struct:Pose2d",
-                (id, v) -> {
-                    // pack three doubles in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f,θ=%.2f", v[0], v[1], v[2])),
-                post,
-                metadata
-        );
+        enqueue(() -> SingleCoreKoalaLog.logPose2d(name, x, y, rot, post, metadata));
     }
 
+    // ---------------------------------------------------------------
+    // Internal helpers
+    // ---------------------------------------------------------------
+
+    /**
+     * Submits a task to the background thread.
+     * Uses offer() so it NEVER blocks the main thread.
+     * If the queue is full the log entry is silently dropped.
+     */
+    private static void enqueue(Runnable task) {
+        if (!RUNNING.get()) return;
+        QUEUE.offer(task); // non-blocking
+    }
+
+    /** Background thread loop: drains tasks until poisoned. */
+    private static void drainLoop() {
+        while (true) {
+            try {
+                // Block for up to 100 ms waiting for work
+                Runnable task = QUEUE.poll(100, TimeUnit.MILLISECONDS);
+                if (task == null) {
+                    // Timed out — check if we should exit
+                    if (!RUNNING.get() && QUEUE.isEmpty()) break;
+                    continue;
+                }
+                if (task == POISON_PILL) break;
+                task.run();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
+                // Never let a logging error kill the worker thread
+                // Optionally: e.printStackTrace();
+            }
+        }
+
+        // Drain any remaining tasks that arrived before the poison pill
+        Runnable leftover;
+        while ((leftover = QUEUE.poll()) != null && leftover != POISON_PILL) {
+            try { leftover.run(); } catch (Exception ignored) {}
+        }
+    }
 }
