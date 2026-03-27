@@ -166,6 +166,18 @@ public class KoalaLog {
         return value;
     }
 
+    public static <E extends Enum<E>> E log(String name, E value, boolean post) {
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value.name(), post, ts));
+        return value;
+    }
+
+    public static <E extends Enum<E>> E log(String name, E value, boolean post, String metadata) {
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value.name(), post, metadata, ts));
+        return value;
+    }
+
     public static String log(String name, String value, boolean post) {
         final long ts = nowMicros();
         enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
