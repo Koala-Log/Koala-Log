@@ -1,5 +1,7 @@
 package Ori.Coval.Logging.Logger;
 
+import static Ori.Coval.Logging.Logger.KoalaLogCore.nowMicros;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.ArrayList;
@@ -35,10 +37,6 @@ public class KoalaLog {
     // Lifecycle
     // ---------------------------------------------------------------
 
-    /**
-     * Calls SingleCoreKoalaLog.setup(hardwareMap) synchronously (must be on main thread).
-     * Does NOT start the background thread — call start() after this.
-     */
     public static void setup(HardwareMap hardwareMap) {
         SingleCoreKoalaLog.setup(hardwareMap);
     }
@@ -56,11 +54,11 @@ public class KoalaLog {
     }
 
     public static synchronized void start() {
-        if (RUNNING.get()) return; // already running
+        if (RUNNING.get()) return;
         QUEUE.clear();
         RUNNING.set(true);
         workerThread = new Thread(KoalaLog::drainLoop, "KoalaLog-Worker");
-        workerThread.setDaemon(true);           // won't block program exit
+        workerThread.setDaemon(true);
         workerThread.setPriority(Thread.NORM_PRIORITY);
         workerThread.start();
     }
@@ -81,65 +79,79 @@ public class KoalaLog {
 
     // ---------------------------------------------------------------
     // Scalar log methods
+    // Timestamp is captured HERE on the calling (main) thread,
+    // then passed into SingleCoreKoalaLog so writeRecord uses it.
     // ---------------------------------------------------------------
 
     public static boolean log(String name, boolean value, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
         return value;
     }
 
     public static boolean log(String name, boolean value, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata, ts));
         return value;
     }
 
     public static long log(String name, long value, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
         return value;
     }
 
     public static long log(String name, long value, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata, ts));
         return value;
     }
 
     public static int log(String name, int value, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
         return value;
     }
 
     public static int log(String name, int value, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata, ts));
         return value;
     }
 
     public static float log(String name, float value, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
         return value;
     }
 
     public static float log(String name, float value, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata, ts));
         return value;
     }
 
     public static double log(String name, double value, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
         return value;
     }
 
     public static double log(String name, double value, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata, ts));
         return value;
     }
 
     public static String log(String name, String value, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, ts));
         return value;
     }
 
     public static String log(String name, String value, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.log(name, value, post, metadata, ts));
         return value;
     }
 
@@ -148,74 +160,86 @@ public class KoalaLog {
     // ---------------------------------------------------------------
 
     public static boolean[] log(String name, boolean[] value, boolean post) {
+        final long ts = nowMicros();
         final boolean[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, ts));
         return value;
     }
 
     public static boolean[] log(String name, boolean[] value, boolean post, String metadata) {
+        final long ts = nowMicros();
         final boolean[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata, ts));
         return value;
     }
 
     public static long[] log(String name, long[] value, boolean post) {
+        final long ts = nowMicros();
         final long[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, ts));
         return value;
     }
 
     public static long[] log(String name, long[] value, boolean post, String metadata) {
+        final long ts = nowMicros();
         final long[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata, ts));
         return value;
     }
 
     public static int[] log(String name, int[] value, boolean post) {
+        final long ts = nowMicros();
         final int[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, ts));
         return value;
     }
 
     public static int[] log(String name, int[] value, boolean post, String metadata) {
+        final long ts = nowMicros();
         final int[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata, ts));
         return value;
     }
 
     public static float[] log(String name, float[] value, boolean post) {
+        final long ts = nowMicros();
         final float[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, ts));
         return value;
     }
 
     public static float[] log(String name, float[] value, boolean post, String metadata) {
+        final long ts = nowMicros();
         final float[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata, ts));
         return value;
     }
 
     public static double[] log(String name, double[] value, boolean post) {
+        final long ts = nowMicros();
         final double[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, ts));
         return value;
     }
 
     public static double[] log(String name, double[] value, boolean post, String metadata) {
+        final long ts = nowMicros();
         final double[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata, ts));
         return value;
     }
 
     public static String[] log(String name, String[] value, boolean post) {
+        final long ts = nowMicros();
         final String[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, ts));
         return value;
     }
 
     public static String[] log(String name, String[] value, boolean post, String metadata) {
+        final long ts = nowMicros();
         final String[] copy = value.clone();
-        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata));
+        enqueue(() -> SingleCoreKoalaLog.log(name, copy, post, metadata, ts));
         return value;
     }
 
@@ -224,82 +248,65 @@ public class KoalaLog {
     // ---------------------------------------------------------------
 
     public static void logTranslation2d(String name, double x, double y, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.logTranslation2d(name, x, y, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.logTranslation2d(name, x, y, post, ts));
     }
 
     public static void logTranslation2d(String name, double x, double y, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.logTranslation2d(name, x, y, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.logTranslation2d(name, x, y, post, metadata, ts));
     }
 
     public static void logRotation2d(String name, double rotation, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.logRotation2d(name, rotation, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.logRotation2d(name, rotation, post, ts));
     }
 
     public static void logRotation2d(String name, double rotation, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.logRotation2d(name, rotation, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.logRotation2d(name, rotation, post, metadata, ts));
     }
 
     public static void logPose2d(String name, double x, double y, double rot, boolean post) {
-        enqueue(() -> SingleCoreKoalaLog.logPose2d(name, x, y, rot, post));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.logPose2d(name, x, y, rot, post, ts));
     }
 
     public static void logPose2d(String name, double x, double y, double rot, boolean post, String metadata) {
-        enqueue(() -> SingleCoreKoalaLog.logPose2d(name, x, y, rot, post, metadata));
+        final long ts = nowMicros();
+        enqueue(() -> SingleCoreKoalaLog.logPose2d(name, x, y, rot, post, metadata, ts));
     }
 
     // ---------------------------------------------------------------
     // Internal helpers
     // ---------------------------------------------------------------
 
-    /**
-     * Submits a task to the background thread.
-     * Uses offer() so it NEVER blocks the main thread.
-     * Queue is unbounded so offer() will only return false on an
-     * OutOfMemoryError — effectively never under normal operation.
-     */
     private static void enqueue(Runnable task) {
         if (!RUNNING.get()) return;
         QUEUE.offer(task);
     }
 
-    /**
-     * Background thread loop.
-     *
-     * Strategy:
-     *   1. Block on poll() until at least one task arrives (up to 100 ms).
-     *   2. Immediately drain everything else currently in the queue into
-     *      a reusable batch list (drainTo is a single atomic sweep).
-     *   3. Execute the whole batch before going back to sleep.
-     *
-     * This means a burst of 300 log calls queued while the worker was
-     * busy is processed in one pass rather than 300 separate wakeups,
-     * dramatically reducing per-entry overhead.
-     */
     private static void drainLoop() {
         final ArrayList<Runnable> batch = new ArrayList<>(BATCH_SIZE);
 
         while (true) {
             try {
-                // Wait for the first task (blocks up to 100 ms)
                 Runnable first = QUEUE.poll(100, TimeUnit.MILLISECONDS);
 
                 if (first == null) {
-                    // Timed out with nothing in the queue
                     if (!RUNNING.get() && QUEUE.isEmpty()) break;
                     continue;
                 }
 
                 if (first == POISON_PILL) break;
 
-                // Atomically drain everything currently available
                 batch.clear();
                 batch.add(first);
-                QUEUE.drainTo(batch, BATCH_SIZE - 1); // grab up to 499 more
+                QUEUE.drainTo(batch, BATCH_SIZE - 1);
 
-                // Execute the batch
                 for (int i = 0; i < batch.size(); i++) {
                     Runnable task = batch.get(i);
-                    if (task == POISON_PILL) return; // exit immediately
+                    if (task == POISON_PILL) return;
                     task.run();
                 }
 
@@ -311,7 +318,6 @@ public class KoalaLog {
             }
         }
 
-        // Final drain — flush everything that arrived before the poison pill
         Runnable leftover;
         while ((leftover = QUEUE.poll()) != null && leftover != POISON_PILL) {
             try { leftover.run(); } catch (Exception ignored) {}

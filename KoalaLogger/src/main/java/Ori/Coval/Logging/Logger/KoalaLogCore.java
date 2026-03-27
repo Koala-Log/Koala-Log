@@ -156,9 +156,10 @@ public class KoalaLogCore implements Closeable {
         String wpiType,
         BiConsumer<Integer, T> wpiLogger,
         BiConsumer<String, T> dashboardPoster,
-        boolean postToDashboard
+        boolean postToDashboard,
+        long timeStamp
     ) {
-        return doLog(name, value, wpiType, wpiLogger, dashboardPoster, postToDashboard, "");
+        return doLog(name, value, wpiType, wpiLogger, dashboardPoster, postToDashboard, "", timeStamp);
     }
 
     /**
@@ -171,7 +172,8 @@ public class KoalaLogCore implements Closeable {
         BiConsumer<Integer, T> wpiLogger,
         BiConsumer<String, T> dashboardPoster,
         boolean postToDashboard,
-        String metadata
+        String metadata,
+        long timeStamp
     ) {
         // If fake mode is enabled, skip everything and return value immediately.
         if (fake) {
@@ -180,10 +182,9 @@ public class KoalaLogCore implements Closeable {
 
         boolean isNew = !recordIDs.containsKey(name);
         int id = recordIDs.computeIfAbsent(name, KoalaLogCore::getID);
-        long ts = nowMicros();
 
         try {
-            if (isNew) startEntry(id, name, wpiType, metadata, ts);
+            if (isNew) startEntry(id, name, wpiType, metadata, timeStamp);
             wpiLogger.accept(id, value);
             if (postToDashboard) dashboardPoster.accept(name, value);
         } catch (IOException | RuntimeException e) {

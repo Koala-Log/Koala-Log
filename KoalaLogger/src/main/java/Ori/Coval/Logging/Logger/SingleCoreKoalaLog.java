@@ -53,365 +53,401 @@ public class SingleCoreKoalaLog {
     }
 
     // Scalars
-    public static boolean log(String name, boolean value, boolean post) {
+    public static boolean log(String name, boolean value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "boolean",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static boolean log(String name, boolean value, boolean post, String metadata) {
+    public static boolean log(String name, boolean value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "boolean",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static long log(String name, long value, boolean post) {
+    public static long log(String name, long value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int64",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static long log(String name, long value, boolean post, String metadata) {
+    public static long log(String name, long value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int64",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static int log(String name, int value, boolean post) {
+    public static int log(String name, int value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
-    }
-
-    public static int log(String name, int value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                timeStamp
         );
     }
 
-    public static Integer log(String name, Integer value, boolean post) {
+    public static int log(String name, int value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
-        );
-    }
-
-    public static Integer log(String name, Integer value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int32",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static float log(String name, float value, boolean post) {
+    public static Integer log(String name, Integer value, boolean post, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "int32",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
+                post,
+                timeStamp
+        );
+    }
+
+    public static Integer log(String name, Integer value, boolean post, String metadata, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "int32",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
+                post,
+                metadata,
+                timeStamp
+        );
+    }
+
+    public static float log(String name, float value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "float",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static float log(String name, float value, boolean post, String metadata) {
+    public static float log(String name, float value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "float",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static double log(String name, double value, boolean post) {
+    public static double log(String name, double value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "double",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(new double[]{v}), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(new double[]{v}), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static double log(String name, double value, boolean post, String metadata) {
+    public static double log(String name, double value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "double",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(new double[]{v}), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(new double[]{v}), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static String log(String name, String value, boolean post) {
+    public static String log(String name, String value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "string",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static String log(String name, String value, boolean post, String metadata) {
+    public static String log(String name, String value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "string",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packString(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, v),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
     // Arrays
-    public static boolean[] log(String name, boolean[] value, boolean post) {
+    public static boolean[] log(String name, boolean[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static boolean[] log(String name, boolean[] value, boolean post, String metadata) {
+    public static boolean[] log(String name, boolean[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static Boolean[] log(String name, Boolean[] value, boolean post) {
+    public static Boolean[] log(String name, Boolean[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static Boolean[] log(String name, Boolean[] value, boolean post, String metadata) {
+    public static Boolean[] log(String name, Boolean[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "boolean[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packBooleans(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static long[] log(String name, long[] value, boolean post) {
+    public static long[] log(String name, long[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static long[] log(String name, long[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                timeStamp
         );
     }
 
-    public static Long[] log(String name, Long[] value, boolean post) {
+    public static long[] log(String name, long[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Long[] log(String name, Long[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static int[] log(String name, int[] value, boolean post) {
+    public static Long[] log(String name, Long[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static int[] log(String name, int[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                timeStamp
         );
     }
 
-    public static Integer[] log(String name, Integer[] value, boolean post) {
+    public static Long[] log(String name, Long[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Integer[] log(String name, Integer[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "int64[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packLongs(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static float[] log(String name, float[] value, boolean post) {
+    public static int[] log(String name, int[] value, boolean post, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "int64[]",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
+                post,
+                timeStamp
+        );
+    }
+
+    public static int[] log(String name, int[] value, boolean post, String metadata, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "int64[]",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
+                post,
+                metadata,
+                timeStamp
+        );
+    }
+
+    public static Integer[] log(String name, Integer[] value, boolean post, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "int64[]",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
+                post,
+                timeStamp
+        );
+    }
+
+    public static Integer[] log(String name, Integer[] value, boolean post, String metadata, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "int64[]",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packInts(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
+                post,
+                metadata,
+                timeStamp
+        );
+    }
+
+    public static float[] log(String name, float[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static float[] log(String name, float[] value, boolean post, String metadata) {
+    public static float[] log(String name, float[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static Float[] log(String name, Float[] value, boolean post) {
+    public static Float[] log(String name, Float[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static Float[] log(String name, Float[] value, boolean post, String metadata) {
+    public static Float[] log(String name, Float[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "float[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packFloats(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static double[] log(String name, double[] value, boolean post) {
+    public static double[] log(String name, double[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static double[] log(String name, double[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                timeStamp
         );
     }
 
-    public static Double[] log(String name, Double[] value, boolean post) {
+    public static double[] log(String name, double[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
-                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
-        );
-    }
-
-    public static Double[] log(String name, Double[] value, boolean post, String metadata) {
-        return KoalaLogCore.doLog(
-                name, value, "double[]",
-                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), KoalaLogCore.nowMicros()),
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), timeStamp),
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
-    public static String[] log(String name, String[] value, boolean post) {
+    public static Double[] log(String name, Double[] value, boolean post, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "double[]",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
+                post,
+                timeStamp
+        );
+    }
+
+    public static Double[] log(String name, Double[] value, boolean post, String metadata, long timeStamp) {
+        return KoalaLogCore.doLog(
+                name, value, "double[]",
+                (id, v) -> KoalaLogCore.writeRecord(id, BytePacker.packDoubles(v), timeStamp),
+                (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
+                post,
+                metadata,
+                timeStamp
+        );
+    }
+
+    public static String[] log(String name, String[] value, boolean post, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "string[]",
                 (id, v) -> {
                     try {
-                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), KoalaLogCore.nowMicros());
+                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), timeStamp);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 },
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
-                post
+                post,
+                timeStamp
         );
     }
 
-    public static String[] log(String name, String[] value, boolean post, String metadata) {
+    public static String[] log(String name, String[] value, boolean post, String metadata, long timeStamp) {
         return KoalaLogCore.doLog(
                 name, value, "string[]",
                 (id, v) -> {
                     try {
-                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), KoalaLogCore.nowMicros());
+                        KoalaLogCore.writeRecord(id, BytePacker.packStrings(v), timeStamp);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 },
                 (n, v) -> FtcDashboard.getInstance().getTelemetry().addData(n, Arrays.toString(v)),
                 post,
-                metadata
+                metadata,
+                timeStamp
         );
     }
 
     /**
      * Logs a 2D translation (two doubles) as struct:Translation2d
      */
-    public static void logTranslation2d(String name, double x, double y, boolean post) {
+    public static void logTranslation2d(String name, double x, double y, boolean post, long timeStamp) {
         KoalaLogCore.doLog(
                 name,
                 new double[]{x, y},
@@ -419,39 +455,41 @@ public class SingleCoreKoalaLog {
                 (id, v) -> {
                     // pack two doubles in little‐endian
                     byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f", v[0], v[1])),
-                post
-        );
-    }
-
-    public static void logTranslation2d(String name, double x, double y, boolean post, String metadata) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{x, y},
-                "struct:Translation2d",
-                (id, v) -> {
-                    // pack two doubles in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
+                    KoalaLogCore.writeRecord(id, payload, timeStamp);
                 },
                 (n, v) -> FtcDashboard
                         .getInstance()
                         .getTelemetry()
                         .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f", v[0], v[1])),
                 post,
-                metadata
+                timeStamp
+        );
+    }
+
+    public static void logTranslation2d(String name, double x, double y, boolean post, String metadata, long timeStamp) {
+        KoalaLogCore.doLog(
+                name,
+                new double[]{x, y},
+                "struct:Translation2d",
+                (id, v) -> {
+                    // pack two doubles in little‐endian
+                    byte[] payload = BytePacker.packDoubles(v);
+                    KoalaLogCore.writeRecord(id, payload, timeStamp);
+                },
+                (n, v) -> FtcDashboard
+                        .getInstance()
+                        .getTelemetry()
+                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f", v[0], v[1])),
+                post,
+                metadata,
+                timeStamp
         );
     }
 
     /**
      * Logs a 2D rotation (one double) as struct:Rotation2d
      */
-    public static void logRotation2d(String name, double rotation, boolean post) {
+    public static void logRotation2d(String name, double rotation, boolean post, long timeStamp) {
         KoalaLogCore.doLog(
                 name,
                 new double[]{rotation},
@@ -459,39 +497,41 @@ public class SingleCoreKoalaLog {
                 (id, v) -> {
                     // pack one double in little‐endian
                     byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "θ=%.2f", v[0])),
-                post
-        );
-    }
-
-    public static void logRotation2d(String name, double rotation, boolean post, String metadata) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{rotation},
-                "struct:Rotation2d",
-                (id, v) -> {
-                    // pack one double in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
+                    KoalaLogCore.writeRecord(id, payload, timeStamp);
                 },
                 (n, v) -> FtcDashboard
                         .getInstance()
                         .getTelemetry()
                         .addData(n, String.format(Locale.US, "θ=%.2f", v[0])),
                 post,
-                metadata
+                timeStamp
+        );
+    }
+
+    public static void logRotation2d(String name, double rotation, boolean post, String metadata, long timeStamp) {
+        KoalaLogCore.doLog(
+                name,
+                new double[]{rotation},
+                "struct:Rotation2d",
+                (id, v) -> {
+                    // pack one double in little‐endian
+                    byte[] payload = BytePacker.packDoubles(v);
+                    KoalaLogCore.writeRecord(id, payload, timeStamp);
+                },
+                (n, v) -> FtcDashboard
+                        .getInstance()
+                        .getTelemetry()
+                        .addData(n, String.format(Locale.US, "θ=%.2f", v[0])),
+                post,
+                metadata,
+                timeStamp
         );
     }
 
     /**
      * Logs a full Pose2d (three doubles) as struct:Pose2d
      */
-    public static void logPose2d(String name, double x, double y, double rot, boolean post) {
+    public static void logPose2d(String name, double x, double y, double rot, boolean post, long timeStamp) {
         KoalaLogCore.doLog(
                 name,
                 new double[]{x, y, rot},
@@ -499,32 +539,34 @@ public class SingleCoreKoalaLog {
                 (id, v) -> {
                     // pack three doubles in little‐endian
                     byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
-                },
-                (n, v) -> FtcDashboard
-                        .getInstance()
-                        .getTelemetry()
-                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f,θ=%.2f", v[0], v[1], v[2])),
-                post
-        );
-    }
-
-    public static void logPose2d(String name, double x, double y, double rot, boolean post, String metadata) {
-        KoalaLogCore.doLog(
-                name,
-                new double[]{x, y, rot},
-                "struct:Pose2d",
-                (id, v) -> {
-                    // pack three doubles in little‐endian
-                    byte[] payload = BytePacker.packDoubles(v);
-                    KoalaLogCore.writeRecord(id, payload, KoalaLogCore.nowMicros());
+                    KoalaLogCore.writeRecord(id, payload, timeStamp);
                 },
                 (n, v) -> FtcDashboard
                         .getInstance()
                         .getTelemetry()
                         .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f,θ=%.2f", v[0], v[1], v[2])),
                 post,
-                metadata
+                timeStamp
+        );
+    }
+
+    public static void logPose2d(String name, double x, double y, double rot, boolean post, String metadata, long timeStamp) {
+        KoalaLogCore.doLog(
+                name,
+                new double[]{x, y, rot},
+                "struct:Pose2d",
+                (id, v) -> {
+                    // pack three doubles in little‐endian
+                    byte[] payload = BytePacker.packDoubles(v);
+                    KoalaLogCore.writeRecord(id, payload, timeStamp);
+                },
+                (n, v) -> FtcDashboard
+                        .getInstance()
+                        .getTelemetry()
+                        .addData(n, String.format(Locale.US, "x=%.2f,y=%.2f,θ=%.2f", v[0], v[1], v[2])),
+                post,
+                metadata,
+                timeStamp
         );
     }
 
