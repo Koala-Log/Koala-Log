@@ -51,6 +51,9 @@ public class SingleCoreKoalaLog {
     public static void close() {
         KoalaLogCore.closeLog();
     }
+    public static void flush() {
+        KoalaLogCore.flush();
+    }
 
     // Scalars
     public static boolean log(String name, boolean value, boolean post, long timeStamp) {

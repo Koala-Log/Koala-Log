@@ -19,8 +19,6 @@ public class AutoLogManager {
         }
 
         ReflectionLogger.update();
-
-        FtcDashboard.getInstance().getTelemetry().update();
     }
 
     static {

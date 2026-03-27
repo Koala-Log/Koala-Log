@@ -32,6 +32,7 @@ public class KoalaLog {
 
     /** How many tasks to drain per batch. */
     private static final int BATCH_SIZE = 500;
+    private static final int MAX_QUEUE_SIZE = 5000;
 
     // ---------------------------------------------------------------
     // Lifecycle
@@ -65,16 +66,38 @@ public class KoalaLog {
 
     public static void stop() {
         if (!RUNNING.compareAndSet(true, false)) return;
+
+        // signal end
         QUEUE.offer(POISON_PILL);
-        if (workerThread != null) {
+
+        long start = System.currentTimeMillis();
+        long timeoutMs = 2000;
+
+        // wait for worker to FINISH
+        while (workerThread != null && workerThread.isAlive()) {
             try {
-                workerThread.join(3000);
+                workerThread.join(50);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                break;
             }
-            workerThread = null;
+
+            if (System.currentTimeMillis() - start > timeoutMs) {
+                System.out.println("KoalaLog: forced shutdown (logs may be incomplete)");
+                break;
+            }
         }
+
+        // 🔴 CRITICAL: only close AFTER worker is done or timed out
+        try {
+            SingleCoreKoalaLog.flush(); // <-- ADD THIS METHOD
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         SingleCoreKoalaLog.close();
+
+        workerThread = null;
     }
 
     // ---------------------------------------------------------------
@@ -283,7 +306,9 @@ public class KoalaLog {
 
     private static void enqueue(Runnable task) {
         if (!RUNNING.get()) return;
-        QUEUE.offer(task);
+        if (QUEUE.size() < MAX_QUEUE_SIZE) {
+            QUEUE.offer(task);
+        }
     }
 
     private static void drainLoop() {

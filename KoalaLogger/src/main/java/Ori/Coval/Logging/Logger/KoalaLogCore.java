@@ -23,6 +23,9 @@ public class KoalaLogCore implements Closeable {
     private static final HashMap<String, Integer> recordIDs = new HashMap<>();
     private static int largestId = 0;
     private static long startTime = System.nanoTime() / 1000;
+    private static final int BUFFER_SIZE = 8192;
+    private static final ByteArrayOutputStream batchBuffer = new ByteArrayOutputStream(BUFFER_SIZE);
+    private static final Object writeLock = new Object();
 
     /**
      * When true, logging is disabled — doLog and writeRecord are no-ops.
@@ -96,24 +99,40 @@ public class KoalaLogCore implements Closeable {
 
     public static void closeLog() {
         synchronized (KoalaLogCore.class) {
-            if (fos != null) {
-                try {
-                    fos.flush();
+            try {
+                flush(); // 🔥 flush everything first
+
+                if (fos != null) {
                     fos.close();
-                } catch (IOException ignored) {}
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
                 fos = null;
             }
+
             recordIDs.clear();
             largestId = 0;
-            startTime = System.nanoTime() / 1000;
-            // do NOT change 'fake' here; let the caller choose to set it again on next setup.
+        }
+    }
+    public static void flush() {
+        synchronized (writeLock) {
+            try {
+                if (fos != null && batchBuffer.size() > 0) {
+                    fos.write(batchBuffer.toByteArray());
+                    batchBuffer.reset();
+                    fos.flush();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     // --- Entry Management ---
 
     private static int getID(String logName) {
-        return recordIDs.computeIfAbsent(logName, key -> ++largestId);
+        return ++largestId;
     }
 
     private static void startEntry(int entryId, String name, String type, String metadata, long ts) throws IOException {
@@ -200,11 +219,24 @@ public class KoalaLogCore implements Closeable {
         if (fake) return;
 
         try {
-            fos.write(0x7F);
-            fos.write(Utils.le32(entryId));
-            fos.write(Utils.le32(payload.length));
-            fos.write(Utils.le64(ts));
-            fos.write(payload);
+            ByteArrayOutputStream record = new ByteArrayOutputStream();
+
+            record.write(0x7F);
+            record.write(Utils.le32(entryId));
+            record.write(Utils.le32(payload.length));
+            record.write(Utils.le64(ts));
+            record.write(payload);
+
+            synchronized (writeLock) {
+                record.writeTo(batchBuffer);
+
+                // 🚀 flush in batches instead of every log
+                if (batchBuffer.size() >= BUFFER_SIZE) {
+                    fos.write(batchBuffer.toByteArray());
+                    batchBuffer.reset();
+                }
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
