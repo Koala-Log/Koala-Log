@@ -79,6 +79,7 @@ public class KoalaLogCore implements Closeable {
             largestId = 0;
             startTime = System.nanoTime() / 1000;
             fake = fakeLog;
+            SchemaRegistry.reset();
 
             if (fake) {
                 // In fake mode we intentionally do not call LogFileManager.setup()
@@ -113,6 +114,7 @@ public class KoalaLogCore implements Closeable {
 
             recordIDs.clear();
             largestId = 0;
+            SchemaRegistry.reset();
         }
     }
     public static void flush() {
