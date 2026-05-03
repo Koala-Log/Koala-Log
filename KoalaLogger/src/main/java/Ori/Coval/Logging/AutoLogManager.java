@@ -14,8 +14,8 @@ public class AutoLogManager {
 
     /** Records values from all registered fields. */
     public static void periodic() {
-        for (Logged loggedClass : loggedClasses) {
-            loggedClass.toLog();
+        for (int i = 0; i < loggedClasses.size(); i++) {
+            loggedClasses.get(i).toLog();
         }
 
         ReflectionLogger.update();
