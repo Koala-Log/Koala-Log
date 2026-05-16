@@ -616,6 +616,14 @@ public class AutoLogAnnotationProcessor extends AbstractProcessor {
         return e == null ? null : ((PackageElement) e).getQualifiedName().toString();
     }
 
+    private boolean isEnumType(TypeMirror tm) {
+        if (tm.getKind() == TypeKind.DECLARED) {
+            Element elem = processingEnv.getTypeUtils().asElement(tm);
+            return elem != null && elem.getKind() == ElementKind.ENUM;
+        }
+        return false;
+    }
+
     private boolean isLoggableType(TypeMirror tm) {
         TypeKind k = tm.getKind();
 
@@ -639,7 +647,10 @@ public class AutoLogAnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        // 3) arrays of any of the above (including wrapper arrays, primitive arrays, String[])
+        // 3) enums
+        if (isEnumType(tm)) return true;
+
+        // 4) arrays of any of the above (including wrapper arrays, primitive arrays, String[])
         if (k == TypeKind.ARRAY) {
             ArrayType at = (ArrayType) tm;
             return isLoggableType(at.getComponentType());

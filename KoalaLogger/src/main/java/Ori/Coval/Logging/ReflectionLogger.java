@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import Ori.Coval.Logging.Logger.KoalaLog;
-import Ori.Coval.Logging.Logger.KoalaLog;
 
 /**
  * TelemetryManager: automatically logs all fields, zero-arg methods, and suppliers
@@ -106,6 +105,8 @@ public class ReflectionLogger {
             KoalaLog.log(name, (double) value, post);
         } else if (type == String.class) {
             KoalaLog.log(name, value.toString(), post);
+        } else if (type.isEnum()) {
+            KoalaLog.log(name, ((Enum<?>) value).name(), post);
         }
         else if (type.isArray()) {
             Class<?> ct = type.getComponentType();
