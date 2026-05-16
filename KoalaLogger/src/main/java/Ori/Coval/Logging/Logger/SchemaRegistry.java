@@ -39,5 +39,9 @@ public class SchemaRegistry {
         registerStructSchemas("struct:Rotation2d", "double value");
         registerStructSchemas("struct:Pose2d", "Translation2d translation;Rotation2d rotation");
     }
+
+    static void reset() {
+        structSchemas.clear();
+    }
 }
 
