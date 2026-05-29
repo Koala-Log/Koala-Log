@@ -10,6 +10,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import Ori.Coval.Logging.AutoLogManager;
+
 public class KoalaLog {
 
     // ---------------------------------------------------------------
@@ -66,6 +68,7 @@ public class KoalaLog {
 
     public static void stop() {
         if (!RUNNING.compareAndSet(true, false)) return;
+        AutoLogManager.loggedClasses.clear();
 
         // signal end
         QUEUE.offer(POISON_PILL);
