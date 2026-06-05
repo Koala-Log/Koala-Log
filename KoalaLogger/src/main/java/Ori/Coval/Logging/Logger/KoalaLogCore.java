@@ -1,6 +1,10 @@
 package Ori.Coval.Logging.Logger;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerImpl;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -39,9 +43,7 @@ public class KoalaLogCore implements Closeable {
      * Set up logging to a file named by the current timestamp (non-fake).
      */
     public static void setup(HardwareMap hardwareMap) {
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
-            .format(new Date());
-        setup(hardwareMap, timeStamp + ".wpilog", false);
+        setup(hardwareMap, defaultFilename(), false);
     }
 
     /**
@@ -55,9 +57,40 @@ public class KoalaLogCore implements Closeable {
      * Set up logging; if fakeLog == true then no file is created and logging is disabled.
      */
     public static void setup(HardwareMap hardwareMap, boolean fakeLog) {
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
-            .format(new Date());
-        setup(hardwareMap, timeStamp + ".wpilog", fakeLog);
+        setup(hardwareMap, defaultFilename(), fakeLog);
+    }
+
+    /**
+     * Build the default log filename: a timestamp, optionally suffixed with the
+     * name of the currently active op mode, e.g. {@code 2026-05-30_14-30-00_MyAuto.wpilog}.
+     */
+    private static String defaultFilename() {
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US).format(new Date());
+        String opModeName = activeOpModeName();
+        return opModeName == null
+            ? timeStamp + ".wpilog"
+            : timeStamp + "_" + opModeName + ".wpilog";
+    }
+
+    /**
+     * Return a filename-safe name of the currently active op mode, or {@code null} when
+     * no user op mode is running.
+     */
+    private static String activeOpModeName() {
+        try {
+            OpModeManagerImpl opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(AppUtil.getInstance().getRootActivity());
+            if (opModeManager == null) {
+                return null;
+            }
+            String name = opModeManager.getActiveOpModeName();
+            if (name == null || name.isEmpty() || name.equals(OpModeManager.DEFAULT_OP_MODE_NAME)) {
+                return null;
+            }
+            // Strip characters that are not safe in a filename.
+            return name.replaceAll("[^a-zA-Z0-9_-]", "_");
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
