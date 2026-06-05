@@ -45,3 +45,8 @@ local.properties
 
 # === Exclude ADB folder ===
 adb/
+
+# === log puller ===
+obj/
+Release/
+publish/
