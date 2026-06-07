@@ -36,10 +36,10 @@ public final class GamepadLogger {
     // -----------------------------------------------------------------------
     private static final int AXIS_LEFT_X       = 0;
     private static final int AXIS_LEFT_Y       = 1;
-    private static final int AXIS_RIGHT_X      = 2;
-    private static final int AXIS_RIGHT_Y      = 3;
-    private static final int AXIS_LEFT_TRIG    = 4;
-    private static final int AXIS_RIGHT_TRIG   = 5;
+    private static final int AXIS_LEFT_TRIG    = 2;
+    private static final int AXIS_RIGHT_TRIG   = 3;
+    private static final int AXIS_RIGHT_X      = 4;
+    private static final int AXIS_RIGHT_Y      = 5;
     private static final int AXIS_COUNT        = 6;
 
     // -----------------------------------------------------------------------
@@ -51,10 +51,10 @@ public final class GamepadLogger {
     private static final int BTN_Y           = 3;
     private static final int BTN_LEFT_BMP    = 4;
     private static final int BTN_RIGHT_BMP   = 5;
-    private static final int BTN_LEFT_STICK  = 6;
-    private static final int BTN_RIGHT_STICK = 7;
-    private static final int BTN_START       = 8;
-    private static final int BTN_BACK        = 9;
+    private static final int BTN_BACK        = 6;
+    private static final int BTN_START       = 7;
+    private static final int BTN_LEFT_STICK  = 8;
+    private static final int BTN_RIGHT_STICK = 9;
     private static final int BTN_GUIDE       = 10;
     private static final int BUTTON_COUNT    = 11;
 
