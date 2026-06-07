@@ -71,7 +71,7 @@ public class KoalaLog {
         AutoLogManager.loggedClasses.clear();
 
         // Stop all GamepadLogger polling threads before draining the queue
-        GamepadLogger.stop();
+        KoalaGamepadLogger.stop();
 
         // signal end
         QUEUE.offer(POISON_PILL);

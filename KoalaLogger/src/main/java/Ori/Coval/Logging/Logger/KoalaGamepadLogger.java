@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * }
  * }</pre>
  */
-public final class GamepadLogger {
+public final class KoalaGamepadLogger {
 
     // -----------------------------------------------------------------------
     // Polling cadence
@@ -87,7 +87,7 @@ public final class GamepadLogger {
     private static ScheduledFuture<?>        pollTask;
 
     /** Prevent instantiation — this class is fully static. */
-    private GamepadLogger() {}
+    private KoalaGamepadLogger() {}
 
     // -----------------------------------------------------------------------
     // Public API
@@ -129,7 +129,7 @@ public final class GamepadLogger {
 
         long periodUs = 1_000_000L / POLL_HZ;
         pollTask = scheduler.scheduleWithFixedDelay(
-            GamepadLogger::pollOnce,
+            KoalaGamepadLogger::pollOnce,
             0, periodUs, TimeUnit.MICROSECONDS
         );
     }
