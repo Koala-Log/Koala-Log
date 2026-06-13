@@ -10,8 +10,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import Ori.Coval.Logging.AutoLogManager;
-
 public class KoalaLog {
 
     // ---------------------------------------------------------------
@@ -328,6 +326,8 @@ public class KoalaLog {
 
     private static void drainLoop() {
         final ArrayList<Runnable> batch = new ArrayList<>(BATCH_SIZE);
+        long lastPeriodicNs = System.nanoTime();
+        final long PERIODIC_INTERVAL_NS = 20_000_000L; // 20 ms ≈ 50 Hz
 
         while (true) {
             try {
@@ -348,6 +348,13 @@ public class KoalaLog {
                     Runnable task = batch.get(i);
                     if (task == POISON_PILL) return;
                     task.run();
+                }
+
+                // After draining, check if it's time to run periodic
+                long now = System.nanoTime();
+                if (now - lastPeriodicNs >= PERIODIC_INTERVAL_NS) {
+                    AutoLogManager.periodic();
+                    lastPeriodicNs = now;
                 }
 
             } catch (InterruptedException e) {

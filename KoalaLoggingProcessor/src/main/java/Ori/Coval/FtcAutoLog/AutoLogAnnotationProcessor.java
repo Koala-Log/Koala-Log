@@ -50,7 +50,7 @@ public class AutoLogAnnotationProcessor extends AbstractProcessor {
     // Adjust this to your WpiLog package
     private static final ClassName KOALA_LOG = ClassName.get("Ori.Coval.Logging.Logger", "KoalaLog");
     private static final ClassName LOGGED = ClassName.get("Ori.Coval.Logging", "Logged");
-    private static final ClassName AUTO_LOG_MANAGER = ClassName.get("Ori.Coval.Logging", "AutoLogManager");
+    private static final ClassName AUTO_LOG_MANAGER = ClassName.get("Ori.Coval.Logging.Logger", "AutoLogManager");
     private static final ClassName SUPPLIER_LOG = ClassName.get("Ori.Coval.Logging", "SupplierLog");
 
     List<Element> autoLogOutputElements = new ArrayList<>();
