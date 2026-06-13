@@ -546,6 +546,12 @@ public class AutoLogAnnotationProcessor extends AbstractProcessor {
 
             if(me.getModifiers().contains(Modifier.FINAL)) continue;
 
+            if (me.getAnnotationMirrors().stream().anyMatch(m -> {
+                String t = m.getAnnotationType().toString();
+                return t.equals("Ori.Coval.Logging.AutoLogOutput")
+                    || t.equals("Ori.Coval.Logging.AutoLogPose2d");
+            })) continue;
+
             if (me.getKind() != ElementKind.METHOD) continue;
             ExecutableElement method = (ExecutableElement) me;
             Set<Modifier> mmods = method.getModifiers();
