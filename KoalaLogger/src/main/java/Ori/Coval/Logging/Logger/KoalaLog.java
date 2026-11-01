@@ -54,6 +54,10 @@ public class KoalaLog {
         SingleCoreKoalaLog.setup(hardwareMap, filename, fakeLog);
     }
 
+    public static boolean isRunning() {
+        return RUNNING.get();
+    }
+
     public static synchronized void start() {
         if (RUNNING.get()) return;
         QUEUE.clear();
